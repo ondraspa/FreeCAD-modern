@@ -84,6 +84,13 @@ void DlgSettingsUI::saveSettings()
 
     // TaskWatcher
     ui->showTaskWatcherCheckBox->onSave();
+
+    // Modern CAD Interface
+    ui->useCommandRibbonCheckBox->onSave();
+    ui->showHeadsUpViewBarCheckBox->onSave();
+    ui->showConfirmationCornerCheckBox->onSave();
+    ui->showContextMiniToolbarCheckBox->onSave();
+    ui->enableShortcutBarCheckBox->onSave();
 }
 
 void DlgSettingsUI::loadSettings()
@@ -113,6 +120,13 @@ void DlgSettingsUI::loadSettings()
 
     // TaskWatcher
     ui->showTaskWatcherCheckBox->onRestore();
+
+    // Modern CAD Interface
+    ui->useCommandRibbonCheckBox->onRestore();
+    ui->showHeadsUpViewBarCheckBox->onRestore();
+    ui->showConfirmationCornerCheckBox->onRestore();
+    ui->showContextMiniToolbarCheckBox->onRestore();
+    ui->enableShortcutBarCheckBox->onRestore();
 
     loadStyleSheet();
 }

@@ -272,7 +272,13 @@ void ViewProviderPage::unsetEdit(int ModNum)
 bool ViewProviderPage::doubleClicked()
 {
     if (Preferences::switchOnClick()) {
-        Gui::Command::assureWorkbench("TechDrawWorkbench");
+        if (Gui::Application::Instance
+            && Gui::Application::Instance->workbenches().contains(QStringLiteral("DrawingWorkbench"))) {
+            Gui::Command::assureWorkbench("DrawingWorkbench");
+        }
+        else {
+            Gui::Command::assureWorkbench("TechDrawWorkbench");
+        }
         show();
     }
 

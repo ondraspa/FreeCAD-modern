@@ -121,6 +121,10 @@ if(BUILD_TECHDRAW)
     add_subdirectory(TechDraw)
 endif(BUILD_TECHDRAW)
 
+if(BUILD_DRAWING)
+    add_subdirectory(Drawing)
+endif(BUILD_DRAWING)
+
 #add_subdirectory(TemplatePyMod)
 
 if(BUILD_TEST)

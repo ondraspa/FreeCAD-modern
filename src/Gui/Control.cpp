@@ -192,6 +192,7 @@ void ControlSingleton::showDialog(Gui::TaskView::TaskDialog* dlg, App::Document*
     connect(dlg, &TaskView::TaskDialog::aboutToBeDestroyed, this, [this, attachTo] {
         closedDialog(attachTo);
     });
+    Q_EMIT dialogShown(dlg);
 }
 
 Gui::TaskView::TaskDialog* ControlSingleton::activeDialog(App::Document* attachedTo) const
@@ -268,6 +269,7 @@ void ControlSingleton::closedDialog(App::Document* /*attachedTo*/)
             | QDockWidget::DockWidgetFloatable
         );
     }
+    Q_EMIT dialogClosed();
 }
 
 bool ControlSingleton::isAllowedAlterDocument(App::Document* attachedTo) const

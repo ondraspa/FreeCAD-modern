@@ -532,6 +532,110 @@
     </widget>
    </item>
    <item>
+    <widget class="QGroupBox" name="groupBoxModernCad">
+     <property name="title">
+      <string>Modern CAD Interface</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayoutModernCad">
+      <item row="0" column="0">
+       <widget class="Gui::PrefCheckBox" name="useCommandRibbonCheckBox">
+        <property name="toolTip">
+         <string>Replaces standard top workbench toolbars with a task-grouped context Command Ribbon</string>
+        </property>
+        <property name="text">
+         <string>Use context-aware Command Ribbon (uncheck for classic toolbars)</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+        <property name="prefEntry" stdset="0">
+         <cstring>UseCommandRibbon</cstring>
+        </property>
+        <property name="prefPath" stdset="0">
+         <cstring>MainWindow</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="Gui::PrefCheckBox" name="showHeadsUpViewBarCheckBox">
+        <property name="toolTip">
+         <string>Displays quick view controls along the top-center edge of the active viewport</string>
+        </property>
+        <property name="text">
+         <string>Show Heads-Up View Toolbar in viewport</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+        <property name="prefEntry" stdset="0">
+         <cstring>ShowHeadsUpViewBar</cstring>
+        </property>
+        <property name="prefPath" stdset="0">
+         <cstring>MainWindow</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="Gui::PrefCheckBox" name="showConfirmationCornerCheckBox">
+        <property name="toolTip">
+         <string>Displays quick Accept and Cancel buttons in the top-right corner of the viewport during active edits</string>
+        </property>
+        <property name="text">
+         <string>Show Confirmation Corner in viewport</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+        <property name="prefEntry" stdset="0">
+         <cstring>ShowConfirmationCorner</cstring>
+        </property>
+        <property name="prefPath" stdset="0">
+         <cstring>MainWindow</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="Gui::PrefCheckBox" name="showContextMiniToolbarCheckBox">
+        <property name="toolTip">
+         <string>Displays a compact floating toolbar near the cursor when selecting geometry or views</string>
+        </property>
+        <property name="text">
+         <string>Show floating Context Mini-Toolbar on selection</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+        <property name="prefEntry" stdset="0">
+         <cstring>ShowContextMiniToolbar</cstring>
+        </property>
+        <property name="prefPath" stdset="0">
+         <cstring>MainWindow</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="Gui::PrefCheckBox" name="enableShortcutBarCheckBox">
+        <property name="toolTip">
+         <string>Opens a context-sensitive shortcut palette at the cursor when pressing S</string>
+        </property>
+        <property name="text">
+         <string>Enable S-Key Shortcut Bar</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+        <property name="prefEntry" stdset="0">
+         <cstring>EnableShortcutBar</cstring>
+        </property>
+        <property name="prefPath" stdset="0">
+         <cstring>MainWindow</cstring>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <spacer name="spacer_3">
      <property name="sizeHint" stdset="0">
       <size>

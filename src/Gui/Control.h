@@ -102,6 +102,10 @@ public Q_SLOTS:
     /// raises the task view panel
     void showTaskView();
 
+Q_SIGNALS:
+    void dialogShown(Gui::TaskView::TaskDialog* dlg);
+    void dialogClosed();
+
 private:
     /// This get called by the TaskView when the Dialog is finished
     void closedDialog(App::Document* attachedTo = nullptr);

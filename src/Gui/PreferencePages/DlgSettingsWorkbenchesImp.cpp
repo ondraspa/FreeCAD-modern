@@ -516,7 +516,7 @@ QStringList DlgSettingsWorkbenchesImp::getDisabledWorkbenches()
     );
     disabled_wbs = QString::fromStdString(hGrp->GetASCII(
         "Disabled",
-        "NoneWorkbench,TestWorkbench,InspectionWorkbench,RobotWorkbench,OpenSCADWorkbench"
+        "NoneWorkbench,TestWorkbench,InspectionWorkbench,RobotWorkbench,OpenSCADWorkbench,TechDrawWorkbench"
     ));
 
     unfiltered_disabled_wbs_list = disabled_wbs.split(QLatin1String(","), Qt::SkipEmptyParts);

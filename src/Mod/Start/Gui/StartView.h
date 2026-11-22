@@ -72,6 +72,7 @@ public:
     void newPartDesignFile();
     void openExistingFile();
     void newAssemblyFile();
+    void newDrawingFile();
     void newDraftFile();
     void newBimFile();
     void recentFileAdded(const QString& filename);
@@ -116,6 +117,7 @@ private:
     NewFileButton* _openFileButton;
     NewFileButton* _partDesignButton;
     NewFileButton* _assemblyButton;
+    NewFileButton* _drawingButton;
     NewFileButton* _draftButton;
     NewFileButton* _bimButton;
     Start::RecentFilesModel _recentFilesModel;

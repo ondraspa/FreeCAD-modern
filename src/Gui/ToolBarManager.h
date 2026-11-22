@@ -181,6 +181,11 @@ public:
     ToolBarArea toolBarArea(QWidget* toolBar) const;
     ToolBarAreaWidget* toolBarAreaWidget(QWidget* toolBar) const;
 
+    /// Returns true when the context-aware CommandRibbonBar replaces classic top toolbars.
+    bool isCommandRibbonActive() const;
+    /// Hides or restores classic workbench toolbars when toggling CommandRibbonBar mode.
+    void applyCommandRibbonMode(bool enabled) const;
+
 protected:
     void setup(ToolBarItem*, QToolBar*) const;
 

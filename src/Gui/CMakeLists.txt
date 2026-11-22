@@ -65,6 +65,8 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/PreferencePages
     ${CMAKE_CURRENT_SOURCE_DIR}/Selection
     ${CMAKE_CURRENT_SOURCE_DIR}/StyleParameters
+    ${CMAKE_CURRENT_SOURCE_DIR}/CommandRibbon
+    ${CMAKE_CURRENT_SOURCE_DIR}/ViewportOverlays
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_BINARY_DIR}/..
@@ -1252,6 +1254,30 @@ SET(Workbench_SRCS
 )
 SOURCE_GROUP("Workbench" FILES ${Workbench_SRCS})
 
+SET(CommandRibbon_SRCS
+    CommandRibbon/CommandRibbonRegistry.h
+    CommandRibbon/CommandRibbonRegistry.cpp
+    CommandRibbon/CommandRibbonBar.h
+    CommandRibbon/CommandRibbonBar.cpp
+)
+SOURCE_GROUP("CommandRibbon" FILES ${CommandRibbon_SRCS})
+
+SET(ViewportOverlays_SRCS
+    ViewportOverlays/ContextActionRegistry.h
+    ViewportOverlays/ContextActionRegistry.cpp
+    ViewportOverlays/HeadsUpViewBar.h
+    ViewportOverlays/HeadsUpViewBar.cpp
+    ViewportOverlays/ConfirmationCorner.h
+    ViewportOverlays/ConfirmationCorner.cpp
+    ViewportOverlays/ContextMiniToolbar.h
+    ViewportOverlays/ContextMiniToolbar.cpp
+    ViewportOverlays/ShortcutBarPopup.h
+    ViewportOverlays/ShortcutBarPopup.cpp
+    ViewportOverlays/ViewportOverlayController.h
+    ViewportOverlays/ViewportOverlayController.cpp
+)
+SOURCE_GROUP("ViewportOverlays" FILES ${ViewportOverlays_SRCS})
+
 SET(Selection_SRCS
     Selection/BoxSelection.cpp
     Selection/BoxSelection.h
@@ -1408,6 +1434,8 @@ SET(FreeCADGui_SRCS
     ${Params_SRCS}
     ${View_SRCS}
     ${Workbench_SRCS}
+    ${CommandRibbon_SRCS}
+    ${ViewportOverlays_SRCS}
     ${Selection_SRCS}
     ${FreeCADGui_SRCS}
 )

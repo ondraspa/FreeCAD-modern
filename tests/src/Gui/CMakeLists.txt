@@ -23,6 +23,8 @@ add_executable(Gui_tests_run
         StyleParameters/CornersTest.cpp
         StyleParameters/GradientTest.cpp
         StyleParameters/ColorShadingTest.cpp
+        CommandRibbonRegistryTest.cpp
+        ContextActionRegistryTest.cpp
         InputHintTest.cpp
         ViewProviderDoubleClick.cpp
         NativeGesturePinchTest.cpp
@@ -38,6 +40,7 @@ setup_qt_test(TranslatorLocale)
 setup_qt_test(InputField)
 setup_qt_test(QuantitySpinBox)
 setup_qt_test(NumericLocaleConsumers)
+setup_qt_test(ModernUiShellTest)
 
 target_link_libraries(Gui_tests_run PRIVATE
     GTest::gmock_main

@@ -519,6 +519,25 @@ void StartupPostProcess::setStyleSheet()
     ParameterGrp::handle hGrp = App::GetApplication().GetParameterGroupByPath(
         "User parameter:BaseApp/Preferences/MainWindow"
     );
+
+    if (!hGrp->GetBool("ModernCadProfileApplied", false)) {
+        const bool hasExistingTheme
+            = !hGrp->GetASCII("StyleSheet").empty() || !hGrp->GetASCII("Theme").empty();
+        if (!hasExistingTheme) {
+            if (auto* prefPackManager = guiApp.prefPackManager()) {
+                prefPackManager->apply("FreeCAD Dark");
+                prefPackManager->apply("Modern CAD");
+                hGrp->SetBool("ModernCadProfileApplied", true);
+                // Let Application's delayed Theme/StyleSheet handler reload Theme Parameters
+                // (FreeCAD Dark.yaml) and apply FreeCAD.qss cleanly without missing-token errors.
+                setQtStyle();
+                QCoreApplication::processEvents();
+                return;
+            }
+        }
+        hGrp->SetBool("ModernCadProfileApplied", true);
+    }
+
     std::string style = hGrp->GetASCII("StyleSheet");
     if (style.empty()) {
         // check the branding settings

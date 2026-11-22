@@ -90,6 +90,7 @@
 #include "BitmapFactory.h"
 #include "ComboView.h"
 #include "Command.h"
+#include "CommandRibbon/CommandRibbonBar.h"
 #include "DockWindowManager.h"
 #include "DownloadManager.h"
 #include "FileDialog.h"
@@ -110,6 +111,7 @@
 #include "ToolBoxManager.h"
 #include "Utilities.h"
 #include "Tree.h"
+#include "ViewportOverlays/ViewportOverlayController.h"
 #include "WaitCursor.h"
 #include "WorkbenchManager.h"
 #include "Workbench.h"
@@ -335,6 +337,9 @@ struct MainWindowP
     QTimer restoreStateTimer;
     QMdiArea* mdiArea;
     QPointer<MDIView> activeView;
+    QToolBar* commandRibbonToolBar = nullptr;
+    CommandRibbonBar* commandRibbonBar = nullptr;
+    ViewportOverlayController* viewportOverlays = nullptr;
     QSignalMapper* windowMapper;
     SplashScreen* splashscreen;
     StatusBarObserver* status;
@@ -392,6 +397,13 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags f)
                 if (auto sb = getMainWindow()->statusBar()) {
                     sb->setVisible(d->hGrp->GetBool("StatusBar", sb->isVisible()));
                 }
+            }
+            else if (boost::equals(Name, "UseCommandRibbon")) {
+                const bool useRibbon = d->hGrp->GetBool("UseCommandRibbon", true);
+                if (d->commandRibbonToolBar) {
+                    d->commandRibbonToolBar->setVisible(useRibbon);
+                }
+                ToolBarManager::getInstance()->applyCommandRibbonMode(useRibbon);
             }
             else if (boost::equals(Name, "MainWindowState")) {
                 OverlayManager::instance()->reload(OverlayManager::ReloadMode::ReloadPause);
@@ -623,6 +635,30 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags f)
 
     setupDockWindows();
 
+    // Initialize the context-aware CommandRibbonBar hosted across the top of MainWindow.
+    // Uses a plain QToolBar (not Gui::ToolBar) so ToolBarManager does not clobber it.
+    d->commandRibbonToolBar = new QToolBar(this);
+    d->commandRibbonToolBar->setObjectName(QStringLiteral("*CommandRibbonToolBar"));
+    d->commandRibbonToolBar->setMovable(false);
+    d->commandRibbonToolBar->setFloatable(false);
+    d->commandRibbonToolBar->setAllowedAreas(Qt::TopToolBarArea);
+    d->commandRibbonToolBar->setContentsMargins(0, 0, 0, 0);
+    if (auto* tbLayout = d->commandRibbonToolBar->layout()) {
+        tbLayout->setContentsMargins(0, 0, 0, 0);
+        tbLayout->setSpacing(0);
+    }
+    d->commandRibbonToolBar->toggleViewAction()->setVisible(false);
+    d->commandRibbonBar = new CommandRibbonBar(d->commandRibbonToolBar);
+    d->commandRibbonToolBar->addWidget(d->commandRibbonBar);
+    addToolBar(Qt::TopToolBarArea, d->commandRibbonToolBar);
+    d->commandRibbonToolBar->setVisible(d->hGrp->GetBool("UseCommandRibbon", true));
+
+    connect(this, &MainWindow::workbenchActivated, d->commandRibbonBar, &CommandRibbonBar::onWorkbenchActivated);
+    connect(this, &MainWindow::windowActivated, d->commandRibbonBar, &CommandRibbonBar::onWindowActivated);
+
+    // Initialize in-viewport overlays (Heads-Up View Bar, Confirmation Corner, Mini-Toolbar, S-Key Bar).
+    d->viewportOverlays = new ViewportOverlayController(this);
+
     // accept drops on the window, get handled in dropEvent, dragEnterEvent
     setAcceptDrops(true);
 
@@ -646,6 +682,16 @@ MainWindow* MainWindow::getInstance()
 {
     // MainWindow has a public constructor
     return instance;
+}
+
+CommandRibbonBar* MainWindow::commandRibbonBar() const
+{
+    return d ? d->commandRibbonBar : nullptr;
+}
+
+ViewportOverlayController* MainWindow::viewportOverlayController() const
+{
+    return d ? d->viewportOverlays : nullptr;
 }
 
 // Helper function to update dock widget according to the user parameter
@@ -1581,6 +1627,7 @@ void MainWindow::setActiveWindow(MDIView* view)
 
     d->activeView = view;
     Application::Instance->viewActivated(view);
+    Q_EMIT windowActivated(view);
 
     // activate/remember workbench by tab (if enabled)
 
@@ -1607,8 +1654,10 @@ void MainWindow::setActiveWindow(MDIView* view)
 void MainWindow::onWindowActivated(QMdiSubWindow* mdi)
 {
     if (!mdi) {
+        d->activeView = nullptr;
         setWindowTitle(QString());
         setWindowModified(false);
+        Q_EMIT windowActivated(nullptr);
         return;
     }
 
@@ -2217,6 +2266,10 @@ void MainWindow::loadWindowSettings()
 
     ToolBarManager::getInstance()->restoreState();
     std::clog << "Toolbars restored" << std::endl;
+
+    if (d->commandRibbonToolBar) {
+        d->commandRibbonToolBar->setVisible(d->hGrp->GetBool("UseCommandRibbon", true));
+    }
 
     OverlayManager::instance()->restore();
 }

@@ -47,9 +47,11 @@ namespace Gui
 
 class BaseView;
 class CommandManager;
+class CommandRibbonBar;
 class Document;
 class MacroManager;
 class MDIView;
+class ViewportOverlayController;
 
 namespace DockWnd
 {
@@ -167,6 +169,8 @@ public:
      * Returns true that the context menu contains the 'Customize...' menu item.
      */
     QMenu* createPopupMenu() override;
+    CommandRibbonBar* commandRibbonBar() const;
+    ViewportOverlayController* viewportOverlayController() const;
 
     /** @name Splasher and access methods */
     //@{
@@ -432,6 +436,7 @@ Q_SIGNALS:
     void guiInitialized();
     void timeEvent();
     void windowStateChanged(QWidget*);
+    void windowActivated(Gui::MDIView*);
     void workbenchActivated(const QString&);
     void mainWindowClosed();
     void recentFileAdded(const QString& filename);

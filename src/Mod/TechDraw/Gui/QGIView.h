@@ -266,6 +266,13 @@ private:
                        QPointF& outLockPos) const;
 
     bool m_inhibitSnapOnPosChange{false};
+    bool m_isDraggingView{false};
+    bool m_propagatingAlignedChildren{false};
+    QPointF m_lastDragScenePos;
+    std::vector<QGIView*> m_movedAlignedChildren;
+
+    bool applyDynamicAlignment(QPointF& newPos) const;
+    void propagateDeltaToAlignedChildren(const QPointF& delta, std::vector<QGIView*>& visited);
 };
 
 } // namespace

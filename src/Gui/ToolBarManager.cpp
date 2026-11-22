@@ -42,9 +42,12 @@
 #include "ToolBarAreaWidget.h"
 #include "Application.h"
 #include "Command.h"
+#include "CommandRibbon/CommandRibbonBar.h"
 #include "MainWindow.h"
 #include "OverlayWidgets.h"
 #include "WidgetFactory.h"
+#include "Workbench.h"
+#include "WorkbenchManager.h"
 
 
 using namespace Gui;
@@ -680,11 +683,46 @@ void ToolBarManager::setToolBarIconSize(QToolBar* toolbar)
     }
 }
 
+bool ToolBarManager::isCommandRibbonActive() const
+{
+    auto hMain = App::GetApplication().GetParameterGroupByPath(
+        "User parameter:BaseApp/Preferences/MainWindow"
+    );
+    return hMain->GetBool("UseCommandRibbon", true);
+}
+
+void ToolBarManager::applyCommandRibbonMode(bool enabled) const
+{
+    if (enabled) {
+        QList<ToolBar*> bars = toolBars();
+        for (ToolBar* tb : std::as_const(bars)) {
+            if (tb) {
+                tb->hide();
+            }
+        }
+    }
+    else {
+        restoreState();
+    }
+}
+
 void ToolBarManager::setup(ToolBarItem* toolBarItems)
 {
     if (!toolBarItems) {
         return;  // empty menu bar
     }
+
+    if (auto* mw = getMainWindow()) {
+        if (auto* ribbon = mw->commandRibbonBar()) {
+            std::string activeWb;
+            if (auto* wb = WorkbenchManager::instance()->active()) {
+                activeWb = wb->name();
+            }
+            ribbon->setFallbackToolBarItems(toolBarItems, activeWb);
+        }
+    }
+
+    const bool ribbonActive = isCommandRibbonActive();
 
     QPointer<QWidget> actionWidget = createActionWidget();
 
@@ -754,8 +792,8 @@ void ToolBarManager::setup(ToolBarItem* toolBarItems)
             toolbar->toggleViewAction()->setVisible(false);
         }
 
-        // Initialise toolbar item visibility
-        toolbar->setVisible(visible);
+        // Initialise toolbar item visibility (suppressed while CommandRibbonBar is active)
+        toolbar->setVisible(ribbonActive ? false : visible);
 
         // Store item visibility policy within the action
         QAction* toggle = toolbar->toggleViewAction();
@@ -770,7 +808,7 @@ void ToolBarManager::setup(ToolBarItem* toolBarItems)
 
         // try to add some breaks to avoid to have all toolbars in one line
         // only account for visible toolbars: hidden ones occupy no row space
-        if (toolbar_added && visible) {
+        if (toolbar_added && visible && !ribbonActive) {
             if (top_width > 0 && getMainWindow()->toolBarBreak(toolbar)) {
                 top_width = 0;
             }
@@ -856,6 +894,12 @@ void ToolBarManager::onTimer()
 
 void ToolBarManager::saveState() const
 {
+    if (isCommandRibbonActive()) {
+        // Toolbars are hidden temporarily while CommandRibbonBar is active;
+        // do not overwrite the user's saved classic toolbar visibility preferences.
+        return;
+    }
+
     auto ignoreSave = [](QAction* action) {
         // Only save state for toolbars whose toggle action is user-visible.
         return !action->isVisible();
@@ -878,6 +922,7 @@ void ToolBarManager::saveState() const
 
 void ToolBarManager::restoreState() const
 {
+    const bool ribbonActive = isCommandRibbonActive();
     std::map<int, QToolBar*> sbToolBars;
     std::map<int, QToolBar*> mbRightToolBars;
     std::map<int, QToolBar*> mbLeftToolBars;
@@ -886,6 +931,10 @@ void ToolBarManager::restoreState() const
         QToolBar* toolbar = findToolBar(toolbars, it);
         if (toolbar) {
             QByteArray toolbarName = toolbar->objectName().toUtf8();
+            if (ribbonActive) {
+                toolbar->setVisible(false);
+                continue;
+            }
             if (getToolbarPolicy(toolbar) != ToolBarItem::DefaultVisibility::Unavailable) {
                 toolbar->setVisible(hPref->GetBool(toolbarName.constData(), toolbar->isVisible()));
             }

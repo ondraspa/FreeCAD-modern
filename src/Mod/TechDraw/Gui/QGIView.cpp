@@ -34,6 +34,9 @@
 #include <App/Application.h>
 #include <App/Document.h>
 #include <App/DocumentObject.h>
+#include <App/PropertyGeo.h>
+#include <App/PropertyLinks.h>
+#include <App/PropertyStandard.h>
 #include <Base/Console.h>
 #include <Base/Tools.h>
 #include <Base/UnitsApi.h>
@@ -166,6 +169,113 @@ void QGIView::alignTo(QGraphicsItem*item, const QString &alignment)
     alignHash.insert(alignment, item);
 }
 
+bool QGIView::applyDynamicAlignment(QPointF& newPos) const
+{
+    TechDraw::DrawView* feat = getViewObject();
+    if (!feat) {
+        return false;
+    }
+
+    auto* parentProp = dynamic_cast<App::PropertyLink*>(feat->getPropertyByName("ParentView"));
+    auto* modeProp = dynamic_cast<App::PropertyString*>(feat->getPropertyByName("AlignmentMode"));
+    if (!parentProp || !modeProp) {
+        return false;
+    }
+
+    App::DocumentObject* parentObj = parentProp->getValue();
+    if (!parentObj) {
+        return false;
+    }
+
+    const std::string mode = modeProp->getValue();
+    if (mode.empty() || mode == "None" || mode == "Broken") {
+        return false;
+    }
+
+    QGIView* parentQgi = getQGIVByName(parentObj->getNameInDocument());
+    if (!parentQgi || parentQgi == this) {
+        return false;
+    }
+
+    const QPointF parentPos = parentQgi->pos();
+    if (mode == "Vertical") {
+        newPos.setX(parentPos.x());
+        return true;
+    }
+    if (mode == "Horizontal") {
+        newPos.setY(parentPos.y());
+        return true;
+    }
+    if (mode == "Vector") {
+        auto* vecProp = dynamic_cast<App::PropertyVector*>(feat->getPropertyByName("AlignmentVector"));
+        if (!vecProp) {
+            return false;
+        }
+        const Base::Vector3d pageVec = vecProp->getValue();
+        // Page +Y points up; Qt scene +Y points down.
+        const double len = std::hypot(pageVec.x, pageVec.y);
+        if (len < 1e-6) {
+            return false;
+        }
+        const double dx = pageVec.x / len;
+        const double dy = -pageVec.y / len;
+        const QPointF rel = newPos - parentPos;
+        const double proj = rel.x() * dx + rel.y() * dy;
+        newPos = parentPos + QPointF(dx * proj, dy * proj);
+        return true;
+    }
+
+    return false;
+}
+
+void QGIView::propagateDeltaToAlignedChildren(const QPointF& delta, std::vector<QGIView*>& visited)
+{
+    TechDraw::DrawView* feat = getViewObject();
+    if (!feat) {
+        return;
+    }
+    ViewProviderPage* vpPage = getViewProviderPage(feat);
+    if (!vpPage || !vpPage->getQGSPage()) {
+        return;
+    }
+
+    for (QGIView* candidate : vpPage->getQGSPage()->getViews()) {
+        if (!candidate || candidate == this) {
+            continue;
+        }
+        if (std::find(visited.begin(), visited.end(), candidate) != visited.end()) {
+            continue;
+        }
+        TechDraw::DrawView* childFeat = candidate->getViewObject();
+        if (!childFeat) {
+            continue;
+        }
+        auto* parentProp = dynamic_cast<App::PropertyLink*>(childFeat->getPropertyByName("ParentView"));
+        auto* modeProp = dynamic_cast<App::PropertyString*>(childFeat->getPropertyByName("AlignmentMode"));
+        if (!parentProp || !modeProp || parentProp->getValue() != feat) {
+            continue;
+        }
+        const std::string mode = modeProp->getValue();
+        if (mode != "Vertical" && mode != "Horizontal" && mode != "Vector") {
+            continue;
+        }
+
+        visited.push_back(candidate);
+        candidate->m_propagatingAlignedChildren = true;
+        candidate->m_inhibitSnapOnPosChange = true;
+        candidate->setPos(candidate->pos() + delta);
+        candidate->m_lastDragScenePos = candidate->pos();
+        candidate->m_propagatingAlignedChildren = false;
+
+        if (std::find(m_movedAlignedChildren.begin(), m_movedAlignedChildren.end(), candidate)
+            == m_movedAlignedChildren.end()) {
+            m_movedAlignedChildren.push_back(candidate);
+        }
+
+        candidate->propagateDeltaToAlignedChildren(delta, visited);
+    }
+}
+
 QVariant QGIView::itemChange(GraphicsItemChange change, const QVariant &value)
 {
     if(change == ItemPositionChange && scene()) {
@@ -185,6 +295,9 @@ QVariant QGIView::itemChange(GraphicsItemChange change, const QVariant &value)
                 }
             }
         }
+        else if (!m_propagatingAlignedChildren && !m_inhibitSnapOnPosChange && applyDynamicAlignment(newPos)) {
+            // Constrained by standalone dynamic alignment properties (ParentView / AlignmentMode)
+        }
         else {
             // For general views we check if we need to snap to a position
             if (!(QApplication::keyboardModifiers() & Qt::AltModifier)) {
@@ -196,6 +309,21 @@ QVariant QGIView::itemChange(GraphicsItemChange change, const QVariant &value)
         }
 
         return newPos;
+    }
+
+    if (change == ItemPositionHasChanged && scene()) {
+        const QPointF newScenePos = pos();
+        if (m_isDraggingView && !m_propagatingAlignedChildren && !snapping) {
+            const QPointF delta = newScenePos - m_lastDragScenePos;
+            m_lastDragScenePos = newScenePos;
+            if (std::abs(delta.x()) > 1e-6 || std::abs(delta.y()) > 1e-6) {
+                std::vector<QGIView*> visited {this};
+                propagateDeltaToAlignedChildren(delta, visited);
+            }
+        }
+        else {
+            m_lastDragScenePos = newScenePos;
+        }
     }
 
     // wf: why scene()? because if our selected state has changed because we have been removed from
@@ -226,7 +354,10 @@ QVariant QGIView::itemChange(GraphicsItemChange change, const QVariant &value)
 //! draggable, should override this method.
 void QGIView::dragFinished()
 {
+    m_isDraggingView = false;
+
     if (!viewObj) {
+        m_movedAlignedChildren.clear();
         return;
     }
 
@@ -245,7 +376,7 @@ void QGIView::dragFinished()
         setY = true;
     }
 
-    if (!setX && !setY) {
+    if (!setX && !setY && m_movedAlignedChildren.empty()) {
         return;
     }
 
@@ -269,6 +400,15 @@ void QGIView::dragFinished()
 
         snapping = false;
     }
+
+    auto movedChildren = std::move(m_movedAlignedChildren);
+    m_movedAlignedChildren.clear();
+    for (QGIView* child : movedChildren) {
+        if (child && child->scene()) {
+            child->dragFinished();
+        }
+    }
+
     if (ownTransaction) {
         viewObj->getDocument()->commitTransaction();
     }
@@ -484,6 +624,9 @@ void QGIView::mousePressEvent(QGraphicsSceneMouseEvent * event)
     Qt::KeyboardModifiers originalModifiers = event->modifiers();
     if (event->button()&Qt::LeftButton) {
         m_multiselectActivated = false;
+        m_isDraggingView = true;
+        m_lastDragScenePos = pos();
+        m_movedAlignedChildren.clear();
     }
 
     if (event->button() == Qt::LeftButton && PreferencesGui::multiSelection()) {
@@ -595,6 +738,7 @@ void QGIView::updatePositionFromFeatureXY()
         double xFeat = Rez::guiX(getViewObject()->X.getValue());
         double yFeat = Rez::guiX(getViewObject()->Y.getValue());
         setPos(xFeat, -yFeat);
+        m_lastDragScenePos = pos();
     }
 }
 

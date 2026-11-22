@@ -525,6 +525,11 @@ bool MDIViewPage::addSelectionGroups(QMenu& menu)
     auto ctx = getSelectionContext();
 
     if (hasSelectionOfType<TechDraw::DrawViewDimension>()) {
+        if (addCommandsByName(menu, {
+                "Drawing_DimensionPalette",
+            }) > 0) {
+            menu.addSeparator();
+        }
         addCommandsByName(menu, {
             "TechDraw_ExtensionIncreaseDecimal",
             "TechDraw_ExtensionDecreaseDecimal",
@@ -608,6 +613,8 @@ bool MDIViewPage::addSelectionGroups(QMenu& menu)
             }
         }
         if (addCommandsByName(menu, {
+                "Drawing_BreakAlignment",
+                "Drawing_RestoreAlignment",
                 "TechDraw_ShowAll",
                 "TechDraw_ExtensionLockUnlockView",
             }) > 0) {

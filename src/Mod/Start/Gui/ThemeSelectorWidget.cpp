@@ -125,6 +125,7 @@ void ThemeSelectorWidget::setupButtons(QBoxLayout* layout)
         "User parameter:BaseApp/Preferences/MainWindow"
     );
     auto styleSheetName = QString::fromStdString(hGrp->GetASCII("StyleSheet"));
+    auto themeName = QString::fromStdString(hGrp->GetASCII("Theme"));
     for (const auto& theme : themeMap) {
         auto button = gsl::owner<QToolButton*>(new QToolButton());
 
@@ -138,18 +139,26 @@ void ThemeSelectorWidget::setupButtons(QBoxLayout* layout)
         button->setText(theme.second);
         button->setIcon(iconMap[theme.first]);
         button->setIconSize(iconMap[theme.first].actualSize(QSize(256, 256)));
-        if (theme.first == Theme::Classic && styleSheetName.isEmpty()) {
+        if (theme.first == Theme::Classic && styleSheetName.isEmpty() && themeName.isEmpty()) {
             button->setChecked(true);
         }
         else if (
             theme.first == Theme::Light
-            && styleSheetName.contains(QLatin1String("FreeCAD Light"), Qt::CaseSensitivity::CaseInsensitive)
+            && (themeName.contains(QLatin1String("FreeCAD Light"), Qt::CaseSensitivity::CaseInsensitive)
+                || styleSheetName.contains(
+                    QLatin1String("FreeCAD Light"),
+                    Qt::CaseSensitivity::CaseInsensitive
+                ))
         ) {
             button->setChecked(true);
         }
         else if (
             theme.first == Theme::Dark
-            && styleSheetName.contains(QLatin1String("FreeCAD Dark"), Qt::CaseSensitivity::CaseInsensitive)
+            && (themeName.contains(QLatin1String("FreeCAD Dark"), Qt::CaseSensitivity::CaseInsensitive)
+                || styleSheetName.contains(
+                    QLatin1String("FreeCAD Dark"),
+                    Qt::CaseSensitivity::CaseInsensitive
+                ))
         ) {
             button->setChecked(true);
         }

@@ -1474,7 +1474,7 @@ Document* View3DInventorViewer::getDocument()
 
 void View3DInventorViewer::initialize()
 {
-    navigation = new CADNavigationStyle();
+    navigation = new SolidWorksNavigationStyle();
     navigation->setViewer(this);
 
     this->axiscrossEnabled = true;

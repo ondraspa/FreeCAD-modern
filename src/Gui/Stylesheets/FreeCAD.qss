@@ -2804,3 +2804,116 @@ QComboBox[validationState="error"]:focus {
     border: 1px solid #ff3b30;
     border-image: none;
 }
+
+/*==================================================================================================
+Modern CAD UI Shell (CommandRibbonBar & Viewport Overlays)
+==================================================================================================*/
+Gui--CommandRibbonBar {
+  background-color: @GeneralBackgroundColor;
+  border-bottom: 1px solid @GeneralBorderColor;
+}
+
+Gui--CommandRibbonBar QWidget#commandRibbonHeader {
+  background-color: @TabbarBackgroundColor;
+  border-bottom: 1px solid @GeneralBorderColor;
+}
+
+Gui--CommandRibbonBar QTabBar#commandRibbonTabBar::tab {
+  background-color: transparent;
+  color: @TextForegroundColor;
+  padding: 4px 12px;
+  margin-right: 2px;
+  border-top-left-radius: @InputFieldBorderRadius;
+  border-top-right-radius: @InputFieldBorderRadius;
+}
+
+Gui--CommandRibbonBar QTabBar#commandRibbonTabBar::tab:selected {
+  background-color: @GeneralBackgroundColor;
+  border: 1px solid @GeneralBorderColor;
+  border-bottom: 2px solid @AccentColor;
+  font-weight: bold;
+}
+
+Gui--CommandRibbonBar QTabBar#commandRibbonTabBar::tab:hover:!selected {
+  background-color: @ButtonTopBackgroundColor;
+}
+
+Gui--CommandRibbonBar QToolButton#commandRibbonMoreButton,
+Gui--CommandRibbonBar QToolButton#commandRibbonCollapseButton {
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: @InputFieldBorderRadius;
+  padding: 2px 8px;
+}
+
+Gui--CommandRibbonBar QToolButton#commandRibbonMoreButton:hover,
+Gui--CommandRibbonBar QToolButton#commandRibbonCollapseButton:hover {
+  background-color: @ButtonTopBackgroundColor;
+  border: 1px solid @GeneralBorderColor;
+}
+
+Gui--CommandRibbonBar QScrollArea#commandRibbonScroll,
+Gui--CommandRibbonBar QWidget#commandRibbonStrip {
+  background-color: @GeneralBackgroundColor;
+}
+
+Gui--CommandRibbonBar QFrame#commandRibbonGroup {
+  background-color: transparent;
+}
+
+Gui--CommandRibbonBar QLabel#commandRibbonGroupTitle {
+  color: @TextDisabledColor;
+  font-size: 10px;
+  padding: 0px 4px;
+}
+
+Gui--CommandRibbonBar QFrame#commandRibbonSeparator,
+Gui--CommandRibbonBar QFrame#commandRibbonHeaderDivider {
+  background-color: @GeneralBorderColor;
+  max-width: 1px;
+  min-width: 1px;
+}
+
+Gui--HeadsUpViewBar,
+Gui--ContextMiniToolbar,
+Gui--ShortcutBarPopup,
+Gui--ConfirmationCorner,
+QFrame#DimensionPalettePopup {
+  background-color: @GeneralBackgroundColor;
+  border: 1px solid @GeneralBorderColor;
+  border-radius: 6px;
+}
+
+Gui--ShortcutBarPopup QLabel#shortcutBarHeader {
+  color: @TextDisabledColor;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 0px 2px;
+}
+
+Gui--ConfirmationCorner QToolButton#confirmationCornerAccept {
+  background-color: #2e7d32;
+  color: #ffffff;
+  border: 1px solid #1b5e20;
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+Gui--ConfirmationCorner QToolButton#confirmationCornerAccept:hover {
+  background-color: #388e3c;
+}
+
+Gui--ConfirmationCorner QToolButton#confirmationCornerReject {
+  background-color: #c62828;
+  color: #ffffff;
+  border: 1px solid #8e0000;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+Gui--ConfirmationCorner QToolButton#confirmationCornerReject:hover {
+  background-color: #d32f2f;
+}
+

@@ -222,12 +222,14 @@ void StartView::configureNewFileButtons(QLayout* layout)
     _openFileButton = new NewFileButton(this, QStringLiteral(":/icons/document-open.svg"));
     _partDesignButton = new NewFileButton(this, QStringLiteral(":/icons/PartDesignWorkbench.svg"));
     _assemblyButton = new NewFileButton(this, QStringLiteral(":/icons/AssemblyWorkbench.svg"));
+    _drawingButton = new NewFileButton(this, QStringLiteral(":/icons/DrawingWorkbench.svg"));
     _draftButton = new NewFileButton(this, QStringLiteral(":/icons/DraftWorkbench.svg"));
     _bimButton = new NewFileButton(this, QStringLiteral(":/icons/BIMWorkbench.svg"));
 
     // TODO: Ensure all of the required WBs are actually available
     layout->addWidget(_partDesignButton);
     layout->addWidget(_assemblyButton);
+    layout->addWidget(_drawingButton);
     layout->addWidget(_draftButton);
     layout->addWidget(_bimButton);
     layout->addWidget(_newEmptyFileButton);
@@ -237,6 +239,7 @@ void StartView::configureNewFileButtons(QLayout* layout)
     connect(_openFileButton, &QPushButton::clicked, this, &StartView::openExistingFile);
     connect(_partDesignButton, &QPushButton::clicked, this, &StartView::newPartDesignFile);
     connect(_assemblyButton, &QPushButton::clicked, this, &StartView::newAssemblyFile);
+    connect(_drawingButton, &QPushButton::clicked, this, &StartView::newDrawingFile);
     connect(_draftButton, &QPushButton::clicked, this, &StartView::newDraftFile);
     connect(_bimButton, &QPushButton::clicked, this, &StartView::newBimFile);
 }
@@ -322,6 +325,26 @@ void StartView::newAssemblyFile()
     Gui::Application::Instance->activateWorkbench("AssemblyWorkbench");
     Gui::Application::Instance->commandManager().runCommandByName("Assembly_CreateAssembly");
     Gui::Application::Instance->commandManager().runCommandByName("Std_Refresh");
+    postStart(PostStartBehavior::doNotSwitchWorkbench);
+}
+
+void StartView::newDrawingFile()
+{
+    Gui::Application::Instance->commandManager().runCommandByName("Std_New");
+    const QStringList workbenches = Gui::Application::Instance->workbenches();
+    if (workbenches.contains(QStringLiteral("DrawingWorkbench"))) {
+        Gui::Application::Instance->activateWorkbench("DrawingWorkbench");
+        if (Gui::Application::Instance->commandManager().getCommandByName("Drawing_NewSheet")) {
+            Gui::Application::Instance->commandManager().runCommandByName("Drawing_NewSheet");
+        }
+        else {
+            Gui::Application::Instance->commandManager().runCommandByName("TechDraw_NewPage");
+        }
+    }
+    else if (workbenches.contains(QStringLiteral("TechDrawWorkbench"))) {
+        Gui::Application::Instance->activateWorkbench("TechDrawWorkbench");
+        Gui::Application::Instance->commandManager().runCommandByName("TechDraw_NewPage");
+    }
     postStart(PostStartBehavior::doNotSwitchWorkbench);
 }
 
@@ -522,6 +545,8 @@ void StartView::retranslateUi()
     _partDesignButton->setDescriptionText(tr("Creates a body with the Part Design workbench"));
     _assemblyButton->setHeadingText(tr("Assembly"));
     _assemblyButton->setDescriptionText(tr("Creates an assembly project"));
+    _drawingButton->setHeadingText(tr("Technical Drawing"));
+    _drawingButton->setDescriptionText(tr("Creates a 2D engineering drawing sheet"));
     _draftButton->setHeadingText(tr("2D Draft"));
     _draftButton->setDescriptionText(tr("Creates a 2D Draft document"));
     _bimButton->setHeadingText(tr("BIM/Architecture"));

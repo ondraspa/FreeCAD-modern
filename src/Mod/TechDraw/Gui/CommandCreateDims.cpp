@@ -401,6 +401,41 @@ public:
                 scenePos = QPointF(x, curPos.y());
             }
         }
+        else if (partFeat && !(QApplication::keyboardModifiers() & Qt::AltModifier)
+                 && (type == DimensionType::DistanceX || type == DimensionType::DistanceY)) {
+            const double spacing = std::max(1.0, Rez::guiX(activeDimAttributes.getCascadeSpacing()));
+            const double snapTol = spacing * 0.22;
+            const auto existingDims = partFeat->getDimensions();
+            for (const auto* other : existingDims) {
+                if (!other || std::find(dims.begin(), dims.end(), other) != dims.end()) {
+                    continue;
+                }
+                const auto otherType = static_cast<DimensionType>(other->Type.getValue());
+                if (otherType != type) {
+                    continue;
+                }
+                if (type == DimensionType::DistanceX) {
+                    const double otherY = -Rez::guiX(other->Y.getValue());
+                    for (int k : {-1, 0, 1}) {
+                        const double targetY = otherY + static_cast<double>(k) * spacing;
+                        if (std::abs(scenePos.y() - targetY) <= snapTol) {
+                            scenePos.setY(targetY);
+                            break;
+                        }
+                    }
+                }
+                else if (type == DimensionType::DistanceY) {
+                    const double otherX = Rez::guiX(other->X.getValue());
+                    for (int k : {-1, 0, 1}) {
+                        const double targetX = otherX + static_cast<double>(k) * spacing;
+                        if (std::abs(scenePos.x() - targetX) <= snapTol) {
+                            scenePos.setX(targetX);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
 
         return scenePos;
     }
