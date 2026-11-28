@@ -889,6 +889,7 @@ protected:
         if (availableDimension == AvailableDimension::FIRST) {
             restartCommand(QT_TRANSLATE_NOOP("Command", "Add point to line distance dimension"));
             createDistanceDimension("Distance", { selPoints[0], selLine[0] });
+            specialDimension = SpecialDimension::LineOr2PointsDistance;
             selAllowed = true;
             availableDimension = AvailableDimension::RESET;
         }
@@ -1130,6 +1131,7 @@ protected:
             //isValidMultiEdge check if lines are parallel.
             restartCommand(QT_TRANSLATE_NOOP("Command", "Add distance dimension"));
             createDistanceDimension("Distance", { ref1, ref2 });
+            specialDimension = SpecialDimension::LineOr2PointsDistance;
             return;
         }
 
@@ -1236,8 +1238,14 @@ protected:
         }
         specialDimension = backup;
 
-        if (selLine.size() == 1) {
+        if (selLine.size() == 1 && selPoints.empty()) {
             createDistanceDimension(newType, { selLine[0] }, chamfer);
+        }
+        else if (selLine.size() == 2) {
+            createDistanceDimension(newType, { selLine[0], selLine[1] }, chamfer);
+        }
+        else if (selPoints.size() == 1 && selLine.size() == 1) {
+            createDistanceDimension(newType, { selPoints[0], selLine[0] }, chamfer);
         }
         else {
             createDistanceDimension(newType, { selPoints[0], selPoints[1] }, chamfer);

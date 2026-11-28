@@ -3,6 +3,11 @@
 import FreeCAD
 import FreeCADGui as Gui
 
+try:
+    import DrawingGui  # Registers Drawing_MakeDrawingFromPart and cross-workbench integrations at startup
+except Exception:
+    pass
+
 
 class DrawingWorkbench(Workbench):
     """Modern SolidWorks/Onshape-inspired technical drawing workbench."""

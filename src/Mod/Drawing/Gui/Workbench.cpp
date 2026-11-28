@@ -265,6 +265,52 @@ void Workbench::registerModernUiIntegrations()
         },
     });
 
+    ctxReg.registerContextRule(Gui::ContextActionRule {
+        .id = "core_body_object",
+        .selectionFilter = "SELECT PartDesign::Body COUNT 1",
+        .workbenchFilter = "",
+        .priority = 18,
+        .commands = {
+            "PartDesign_NewSketch",
+            "Drawing_MakeDrawingFromPart",
+            "Std_TransformManip",
+            "Std_ViewFitSelection",
+            "Std_ToggleVisibility",
+        },
+    });
+
+    ctxReg.registerContextRule(Gui::ContextActionRule {
+        .id = "drawing_app_part",
+        .selectionFilter = "SELECT App::Part COUNT 1",
+        .workbenchFilter = "",
+        .priority = 18,
+        .commands = {
+            "Drawing_MakeDrawingFromPart",
+            "Std_TransformManip",
+            "Std_ViewFitSelection",
+            "Std_ToggleVisibility",
+        },
+    });
+
+    if (const Gui::RibbonTabDef* evalTab = ribbon.findTab("evaluate_tools")) {
+        Gui::RibbonTabDef updatedEval = *evalTab;
+        const bool hasDrawingGroup = std::any_of(
+            updatedEval.groups.begin(),
+            updatedEval.groups.end(),
+            [](const Gui::RibbonGroupDef& g) { return g.id == "eval_drawing"; }
+        );
+        if (!hasDrawingGroup) {
+            updatedEval.groups.push_back(Gui::RibbonGroupDef {
+                .id = "eval_drawing",
+                .title = "Drawing",
+                .commands = {
+                    {"Drawing_MakeDrawingFromPart", Gui::RibbonButtonSize::Large},
+                },
+            });
+            ribbon.registerTab(updatedEval);
+        }
+    }
+
     if (auto* mw = Gui::getMainWindow()) {
         if (auto* overlays = mw->viewportOverlayController()) {
             if (auto* headsUp = overlays->headsUpViewBar()) {
